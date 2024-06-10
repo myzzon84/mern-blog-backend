@@ -1,21 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import {
-    registerValidation,
-    loginValidation,
-    postCreateValidation,
-} from './validations.js';
-import checkAuth from './utils/checkAuth.js';
-import { register, login, getMe } from './controllers/UserController.js';
-import {
-    createPost,
-    getAllPost,
-    getOnePost,
-    removePost,
-    updatePost,
-} from './controllers/PostController.js';
+import * as validations from './validations.js';
+import * as UserController from './controllers/UserController.js';
+import * as PostController from './controllers/PostController.js';
 import multer from 'multer';
-import handleValidationErrors from './utils/handleValidationErrors.js';
+import * as utils from './utils/index.js';
+import cors from 'cors';
 
 mongoose
     .connect(
@@ -43,22 +33,46 @@ const upload = multer({ storage });
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
+app.use(cors());
 
-app.post('/auth/register', registerValidation, handleValidationErrors, register);
-app.post('/auth/login', loginValidation, handleValidationErrors, login);
-app.get('/auth/me', checkAuth, getMe);
+app.post(
+    '/auth/register',
+    validations.registerValidation,
+    utils.handleValidationErrors,
+    UserController.register
+);
+app.post(
+    '/auth/login',
+    validations.loginValidation,
+    utils.handleValidationErrors,
+    UserController.login
+);
+app.get('/auth/me', utils.checkAuth, UserController.getMe);
 
-app.post('/upload', checkAuth, upload.single('image'), (req, res) => {
+app.post('/upload', utils.checkAuth, upload.single('image'), (req, res) => {
     return res.json({
         url: `/uploads/${req.file.originalname}`,
     });
 });
 
-app.get('/posts', getAllPost);
-app.get('/posts/:id', getOnePost);
-app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, createPost);
-app.delete('/posts/:id', checkAuth, removePost);
-app.patch('/posts/:id', checkAuth, postCreateValidation, handleValidationErrors, updatePost);
+app.get('/posts', PostController.getAllPost);
+app.get('/posts/one/:id', PostController.getOnePost);
+app.get('/posts/tags', PostController.getLastTags);
+app.post(
+    '/posts',
+    utils.checkAuth,
+    validations.postCreateValidation,
+    utils.handleValidationErrors,
+    PostController.createPost
+);
+app.delete('/posts/one/:id', utils.checkAuth, PostController.removePost);
+app.patch(
+    '/posts/one/:id',
+    utils.checkAuth,
+    validations.postCreateValidation,
+    utils.handleValidationErrors,
+    PostController.updatePost
+);
 
 app.listen(4444, (err) => {
     if (err) {

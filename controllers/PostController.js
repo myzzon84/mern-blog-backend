@@ -87,13 +87,31 @@ export const updatePost = async (req, res) => {
                 imageUrl: req.body.imageUrl,
                 user: req.userId,
                 tags: req.body.tags,
-            },
+            }
         );
         return res.json(post);
+    } catch (error) {tags 
+        console.log(error);
+        return res.status(500).json({
+            message: 'Error updating post',
+        });
+    }
+};
+
+export const getLastTags = async (req, res) => {
+    try {
+        const posts = await PostModel.find().limit(5).exec();
+        const tags = [];
+        posts.forEach((item) => {
+            if(item.tags.length > 0){
+                item.tags.forEach((item) => tags.push(item));
+            }
+        });
+        return res.json(tags);
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: 'Error updating post'
+            message: 'Error when receiving tags',
         });
     }
 };
