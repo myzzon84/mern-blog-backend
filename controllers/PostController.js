@@ -100,12 +100,14 @@ export const updatePost = async (req, res) => {
 
 export const getLastTags = async (req, res) => {
     try {
-        const posts = await PostModel.find().limit(5).exec();
+        const posts = await PostModel.find().limit(20).exec();
         const tags = [];
-        posts.forEach((item) => {
-            if(item.tags.length > 0){
-                item.tags.forEach((item) => tags.push(item));
-            }
+        posts.forEach((posts) => {
+            posts.tags.forEach((tag) => {
+                if(tags.length < 5){
+                    tags.push(tag);
+                }
+            });
         });
         return res.json(tags);
     } catch (error) {

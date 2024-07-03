@@ -1,16 +1,21 @@
-
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import UserModel from '../models/User.js';
 
 export const register = async (req, res) => {
     try {
-
         const email = await UserModel.find({ email: req.body.email });
         if (email.length) {
             return res.status(400).json({
                 message:
                     'Пользователь с таким адресом электронной почты уже существует',
+            });
+        }
+
+        const name = await UserModel.find({ fullName: req.body.fullName });
+        if (name.length) {
+            return res.status(400).json({
+                message: 'Такое имя уже занято',
             });
         }
 
@@ -89,6 +94,31 @@ export const login = async (req, res) => {
     }
 };
 
+export const checkToken = async (req, res) => {
+    if (req.body.token) {
+        let decoded = {};
+        try {
+            decoded = jwt.verify(req.body.token, 'secret123');
+        } catch (error) {
+            return res.json({status: 400});
+        }
+        let user;
+        if(decoded._id){
+            user = await UserModel.findById(decoded._id);
+        }
+        
+        if (user) {
+            return res.json({status: 200});
+        } else {
+            return res.json({status: 400});
+        }
+    }else{
+        return res.status(400).json({
+            status: 400,
+        })
+    }
+};
+
 export const getMe = async (req, res) => {
     try {
         const user = await UserModel.findById(req.userId);
@@ -103,5 +133,17 @@ export const getMe = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const getUserFullName = async (req, res) => {
+    try {
+        const user = await UserModel.findById(req.body.id);
+        return res.json(user);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Error getting user',
+        });
     }
 };

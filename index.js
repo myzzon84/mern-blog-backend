@@ -49,6 +49,8 @@ app.post(
 );
 app.get('/auth/me', utils.checkAuth, UserController.getMe);
 
+app.post('/user', UserController.getUserFullName);
+
 app.post('/upload', utils.checkAuth, upload.single('image'), (req, res) => {
     return res.json({
         url: `/uploads/${req.file.originalname}`,
@@ -73,6 +75,8 @@ app.patch(
     utils.handleValidationErrors,
     PostController.updatePost
 );
+
+app.post('/check-token', UserController.checkToken);
 
 app.listen(4444, (err) => {
     if (err) {
