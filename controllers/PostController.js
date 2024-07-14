@@ -17,6 +17,7 @@ export const createPost = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             message: 'Не удалось создать статью',
+            error: error,
         });
     }
 };
@@ -39,7 +40,7 @@ export const getOnePost = async (req, res) => {
             { _id: postId },
             { $inc: { viewsCount: 1 } },
             { returnDocument: 'after' }
-        );
+        ).populate('user').exec();
         if (!onePost) {
             return res.status(404).json({
                 message: 'Post not found',
@@ -77,6 +78,7 @@ export const removePost = async (req, res) => {
     }
 };
 export const updatePost = async (req, res) => {
+    console.log(req);
     try {
         const postId = req.params.id;
         const post = await PostModel.updateOne(
