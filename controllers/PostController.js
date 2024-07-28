@@ -78,10 +78,9 @@ export const removePost = async (req, res) => {
     }
 };
 export const updatePost = async (req, res) => {
-    console.log(req);
     try {
-        const postId = req.params.id;
-        const post = await PostModel.updateOne(
+        const postId = req.body._id;
+        const post = await PostModel.findOneAndUpdate(
             { _id: postId },
             {
                 title: req.body.title,
@@ -92,7 +91,7 @@ export const updatePost = async (req, res) => {
             }
         );
         return res.json(post);
-    } catch (error) {tags 
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
             message: 'Error updating post',
